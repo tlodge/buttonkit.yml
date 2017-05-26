@@ -1,0 +1,122 @@
+neo4j:
+  image:
+    tlodge/neo4j
+  ports:
+    - "7474"
+  volumes: 
+    - /opt/neo4j:/data/neo4j
+  privileged: 
+   true
+  container_name: 
+   neo4j1
+
+postfix:
+  image:
+    tlodge/postfix
+  ports:
+    - "25"
+  hostname:
+    buttonkit.com  
+  volumes:
+    - /opt/postfix/main.cf:/etc/postfix/main.cf
+  container_name:
+    postfix
+
+mongo:
+  image:
+    tlodge/mongo
+  ports:
+    - "27017"
+  volumes:
+    - /opt/mongo:/data/mongo
+  container_name:
+    mongo1
+  command: 
+    mongod --smallfiles --dbpath "/data/mongo" 
+
+rabbitmq:
+  image:
+   tlodge/rabbitmq
+  ports:
+   - "5672"
+   - "15672"
+  container_name:
+   rabbitmq1
+
+redis:
+  image: 
+    tlodge/redis
+  ports:
+    - "6679"
+  volumes:
+    - /opt/redis:/data/redis
+  container_name:
+    redis1
+
+red:
+  image:
+    tlodge/red
+  links:
+    - neo4j
+    - mongo
+  ports:
+    - "1880"
+  volumes:
+    - /opt/red:/data/red
+  container_name:
+    red1
+
+worker:
+  image:
+    tlodge/worker
+  links:
+    - rabbitmq
+    - red
+  volumes:
+    - /opt/worker/config.js:/root/roomcast/roomcast.worker/config.js
+  container_name:
+    worker1
+
+buttonkit:
+   image:
+     tlodge/buttonkit 
+   links:
+     - neo4j
+     - mongo
+     - red
+     - redis
+     - rabbitmq
+     - postfix
+   ports:
+     - "8080"
+   command:
+     npm start 
+   volumes:
+     - /opt/buttonkit/config/config.js:/usr/src/app/js/config.js:ro
+     - /opt/buttonkit/config/appconfig.js:/usr/src/app/js/appconfig.js:ro
+     - /opt/red:/data/red
+     - /opt/buttonkit/media/static/counter.txt:/data/buttonkit/media/state/counter.txt
+     - /opt/buttonkit/media/signatures:/usr/src/app/static/media/signatures
+     - /opt/buttonkit/logs:/data/buttonkit/logs
+     - /opt/buttonkit/app:/data/buttonkit/app
+   container_name:
+     buttonkit1
+
+
+nginx:
+  image:
+    tlodge/nginx
+  links:
+    - neo4j
+    - red
+    - buttonkit
+  ports:
+    - "80:80"
+    - "443:443"
+  volumes:
+    - /opt/nginx/default:/etc/nginx/sites-enabled/default:ro
+    - /opt/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    - /etc/letsencrypt/archive:/etc/letsencrypt/archive:ro
+    - /etc/letsencrypt/live:/etc/letsencrypt/live:ro
+  container_name:
+    nginx1
