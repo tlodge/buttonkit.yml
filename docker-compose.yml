@@ -1,3 +1,12 @@
+rabbitmq:
+  image:
+   tlodge/rabbitmq
+  ports:
+   - "5672:5672"
+   - "15672"
+  container_name:
+   rabbitmq1
+
 neo4j:
   image:
     tlodge/neo4j
@@ -6,9 +15,11 @@ neo4j:
   volumes: 
     - /opt/neo4j:/data/neo4j
   privileged: 
-   true
+   true 
   container_name: 
    neo4j1
+  command:
+   /var/lib/neo4j/bin/neo4j console
 
 postfix:
   image:
@@ -34,15 +45,6 @@ mongo:
   command: 
     mongod --smallfiles --dbpath "/data/mongo" 
 
-rabbitmq:
-  image:
-   tlodge/rabbitmq
-  ports:
-   - "5672"
-   - "15672"
-  container_name:
-   rabbitmq1
-
 redis:
   image: 
     tlodge/redis
@@ -57,8 +59,8 @@ red:
   image:
     tlodge/red
   links:
-    - neo4j
     - mongo
+    - neo4j
   ports:
     - "1880"
   volumes:
@@ -95,7 +97,7 @@ buttonkit:
      - /opt/buttonkit/config/config.js:/usr/src/app/js/config.js:ro
      - /opt/buttonkit/config/appconfig.js:/usr/src/app/js/appconfig.js:ro
      - /opt/red:/data/red
-     - /opt/buttonkit/media/static/counter.txt:/data/buttonkit/media/state/counter.txt
+     - /opt/buttonkit/media:/usr/src/app/static/media
      - /opt/buttonkit/media/signatures:/usr/src/app/static/media/signatures
      - /opt/buttonkit/logs:/data/buttonkit/logs
      - /opt/buttonkit/app:/data/buttonkit/app
