@@ -13,7 +13,7 @@ neo4j:
   ports:
     - "7474"
   volumes: 
-    - /opt/neo4j:/data/neo4j
+    - ~/dkrmnt/neo4j:/data/neo4j
   privileged: 
    true 
   container_name: 
@@ -29,7 +29,7 @@ postfix:
   hostname:
     buttonkit.com  
   volumes:
-    - /opt/postfix/main.cf:/etc/postfix/main.cf
+    - ~/dkrmnt/postfix/main.cf:/etc/postfix/main.cf
   container_name:
     postfix
 
@@ -39,7 +39,7 @@ mongo:
   ports:
     - "27017"
   volumes:
-    - /opt/mongo:/data/mongo
+    - ~/dkrmnt/mongo:/data/mongo
   container_name:
     mongo1
   command: 
@@ -51,7 +51,7 @@ redis:
   ports:
     - "6679"
   volumes:
-    - /opt/redis:/data/redis
+    - ~/dkrmnt/redis:/data/redis
   container_name:
     redis1
 
@@ -64,7 +64,7 @@ red:
   ports:
     - "1880"
   volumes:
-    - /opt/red:/data/red
+    - ~/dkrmnt/red:/data/red
   container_name:
     red1
 
@@ -75,7 +75,7 @@ worker:
     - rabbitmq
     - red
   volumes:
-    - /opt/worker/config.js:/root/roomcast/roomcast.worker/config.js
+    - ~/dkrmnt/worker/config.js:/root/roomcast/roomcast.worker/config.js
   container_name:
     worker1
 
@@ -95,13 +95,13 @@ buttonkit:
      npm start 
    volumes:
      - '/var/run/docker.sock:/var/run/docker.sock'
-     - /opt/buttonkit/config/config.js:/usr/src/app/js/config.js:ro
-     - /opt/buttonkit/config/appconfig.js:/usr/src/app/js/appconfig.js:ro
-     - /opt/red:/data/red
-     - /opt/buttonkit/media:/usr/src/app/static/media
-     - /opt/buttonkit/media/signatures:/usr/src/app/static/media/signatures
-     - /opt/buttonkit/logs:/data/buttonkit/logs
-     - /opt/buttonkit/app:/data/buttonkit/app
+     - ~/dkrmnt/buttonkit/config/config.js:/usr/src/app/js/config.js:ro
+     - ~/dkrmnt/buttonkit/config/appconfig.js:/usr/src/app/js/appconfig.js:ro
+     - ~/dkrmnt/red:/data/red
+     - ~/dkrmnt/buttonkit/media:/usr/src/app/static/media
+     - ~/dkrmnt/buttonkit/media/signatures:/usr/src/app/static/media/signatures
+     - ~/dkrmnt/buttonkit/logs:/data/buttonkit/logs
+     - ~/dkrmnt/buttonkit/app:/data/buttonkit/app
    container_name:
      buttonkit1
 
@@ -117,9 +117,9 @@ nginx:
     - "80:80"
     - "443:443"
   volumes:
-    - /opt/nginx/default:/etc/nginx/sites-enabled/default:ro
-    - /opt/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-    - /etc/letsencrypt/archive:/etc/letsencrypt/archive:ro
-    - /etc/letsencrypt/live:/etc/letsencrypt/live:ro
+    - ~/dkrmnt/nginx/default:/etc/nginx/sites-enabled/default:ro
+    - ~/dkrmnt/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+#    - /etc/letsencrypt/archive:/etc/letsencrypt/archive:ro
+#    - /etc/letsencrypt/live:/etc/letsencrypt/live:ro
   container_name:
     nginx1
