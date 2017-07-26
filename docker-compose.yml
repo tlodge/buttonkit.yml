@@ -2,7 +2,7 @@ rabbitmq:
   image:
    tlodge/rabbitmq
   ports:
-   - "5672:5672"
+   - "5672"
    - "15672"
   container_name:
    rabbitmq1
@@ -13,7 +13,7 @@ neo4j:
   ports:
     - "7474"
   volumes: 
-    - /opt/neo4j:/data/neo4j
+    - ${HOSTMOUNT}/neo4j:/data/neo4j
   privileged: 
    true 
   container_name: 
@@ -29,7 +29,7 @@ postfix:
   hostname:
     buttonkit.com  
   volumes:
-    - /opt/postfix/main.cf:/etc/postfix/main.cf
+    - /etc/postfix/
   container_name:
     postfix
 
@@ -39,7 +39,7 @@ mongo:
   ports:
     - "27017"
   volumes:
-    - /opt/mongo:/data/mongo
+    - ${HOSTMOUNT}/mongo:/data/mongo
   container_name:
     mongo1
   command: 
@@ -51,31 +51,17 @@ redis:
   ports:
     - "6679"
   volumes:
-    - /opt/redis:/data/redis
+    - /data/redis
   container_name:
     redis1
-
-red:
-  image:
-    tlodge/red
-  links:
-    - mongo
-    - neo4j
-  ports:
-    - "1880"
-  volumes:
-    - /opt/red:/data/red
-  container_name:
-    red1
 
 worker:
   image:
     tlodge/worker
   links:
     - rabbitmq
-    - red
   volumes:
-    - /opt/worker/config.js:/root/roomcast/roomcast.worker/config.js
+    - /root/roomcast/roomcast.worker/conf
   container_name:
     worker1
 
@@ -85,7 +71,6 @@ buttonkit:
    links:
      - neo4j
      - mongo
-     - red
      - redis
      - rabbitmq
      - postfix
@@ -94,14 +79,11 @@ buttonkit:
    command:
      npm start 
    volumes:
-     - '/var/run/docker.sock:/var/run/docker.sock'
-     - /opt/buttonkit/config/config.js:/usr/src/app/js/config.js:ro
-     - /opt/buttonkit/config/appconfig.js:/usr/src/app/js/appconfig.js:ro
-     - /opt/red:/data/red
-     - /opt/buttonkit/media:/usr/src/app/static/media
-     - /opt/buttonkit/media/signatures:/usr/src/app/static/media/signatures
-     - /opt/buttonkit/logs:/data/buttonkit/logs
-     - /opt/buttonkit/app:/data/buttonkit/app
+     - /var/run/docker.sock:/var/run/docker.sock
+     - /usr/src/app/js/config
+     - ${HOSTMOUNT}/buttonkit/media:/usr/src/app/static/media
+     - /data/buttonkit/logs
+     - /data/buttonkit/app
    container_name:
      buttonkit1
 
@@ -111,15 +93,13 @@ nginx:
     tlodge/nginx
   links:
     - neo4j
-    - red
     - buttonkit
   ports:
     - "80:80"
     - "443:443"
   volumes:
-    - /opt/nginx/default:/etc/nginx/sites-enabled/default:ro
-    - /opt/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-    - /etc/letsencrypt/archive:/etc/letsencrypt/archive:ro
-    - /etc/letsencrypt/live:/etc/letsencrypt/live:ro
+    - /etc/nginx
+#   - /etc/letsencrypt/archive:/etc/letsencrypt/archive:ro
+#   - /etc/letsencrypt/live:/etc/letsencrypt/live:ro
   container_name:
     nginx1
