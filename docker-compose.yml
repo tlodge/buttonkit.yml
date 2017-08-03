@@ -80,7 +80,7 @@ buttonkit:
      npm start 
    volumes:
      - /var/run/docker.sock:/var/run/docker.sock
-     - /usr/src/app/js/config
+     #- /usr/src/app/js/config
      - ${HOSTMOUNT}/buttonkit/media:/usr/src/app/static/media
      - /data/buttonkit/logs
      - /data/buttonkit/app
