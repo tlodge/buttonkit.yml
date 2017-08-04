@@ -55,16 +55,6 @@ redis:
   container_name:
     redis1
 
-worker:
-  image:
-    tlodge/worker
-  links:
-    - rabbitmq
-  volumes:
-    - /root/roomcast/roomcast.worker/conf
-  container_name:
-    worker1
-
 buttonkit:
    image:
      tlodge/buttonkit 
@@ -85,8 +75,18 @@ buttonkit:
      - /data/buttonkit/logs
      - /data/buttonkit/app
    container_name:
-     buttonkit1
+     buttonkit
 
+worker:
+  image:
+    tlodge/worker
+  links:
+    - rabbitmq
+    - buttonkit
+  volumes:
+    - /root/roomcast/roomcast.worker/conf
+  container_name:
+    worker1
 
 nginx:
   image:
