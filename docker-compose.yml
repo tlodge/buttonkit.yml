@@ -1,107 +1,138 @@
-rabbitmq:
-  image:
-   tlodge/rabbitmq
-  ports:
-   - "5672"
-   - "15672"
-  container_name:
-   rabbitmq1
 
-neo4j:
-  image:
-    tlodge/neo4j
-  ports:
-    - "7474"
-  volumes: 
-    - ${HOSTMOUNT}/neo4j:/data/neo4j
-  privileged: 
-   true 
-  container_name: 
-   neo4j1
-  command:
-   /var/lib/neo4j/bin/neo4j console
+version: '2'
 
-postfix:
-  image:
-    tlodge/postfix
-  ports:
-    - "25"
-  hostname:
-    buttonkit.com  
-  volumes:
-    - /etc/postfix/
-  container_name:
-    postfix
+services:
 
-mongo:
-  image:
-    tlodge/mongo
-  ports:
-    - "27017"
-  volumes:
-    - ${HOSTMOUNT}/mongo:/data/mongo
-  container_name:
-    mongo1
-  command: 
-    mongod --smallfiles --dbpath "/data/mongo" 
+  rabbitmq:
+    restart: always
+    image:
+     tlodge/rabbitmq
+    ports:
+     - "5672"
+     - "15672"
+    container_name:
+     rabbitmq1
 
-redis:
-  image: 
-    tlodge/redis
-  ports:
-    - "6679"
-  volumes:
-    - /data/redis
-  container_name:
-    redis1
+  neo4j:
+    restart: always
+    image:
+      tlodge/neo4j
+    ports:
+      - "7474"
+    volumes: 
+      - ${HOSTMOUNT}/neo4j:/data/neo4j
+    privileged: 
+     true 
+    container_name: 
+     neo4j1
+    command:
+     /var/lib/neo4j/bin/neo4j console
 
-buttonkit:
-   image:
-     tlodge/buttonkit 
-   links:
-     - neo4j
-     - mongo
-     - redis
-     - rabbitmq
-     - postfix
-   ports:
-     - "8080"
-   command:
-     node index.js 
-   volumes:
-     - /var/run/docker.sock:/var/run/docker.sock
-     #- /usr/src/app/js/config
-     - ${HOSTMOUNT}/buttonkit/media:/usr/src/app/static/media
-     - /data/buttonkit/logs
-     - /data/buttonkit/app
-   container_name:
-     buttonkit
+  postfix:
+    restart: always
+    image:
+      tlodge/postfix
+    ports:
+      - "25"
+    hostname:
+      buttonkit.com  
+    volumes:
+      - /etc/postfix/
+    container_name:
+      postfix
 
-worker:
-  image:
-    tlodge/worker
-  links:
-    - rabbitmq
-    - buttonkit
-  volumes:
-    - /root/roomcast/roomcast.worker/conf
-  container_name:
-    worker1
-  command:
-    npm start
+  mongo:
+    restart: always
+    image:
+      tlodge/mongo
+    ports:
+      - "27017"
+    volumes:
+      - ${HOSTMOUNT}/mongo:/data/mongo
+    container_name:
+      mongo1
+    command: 
+      mongod --smallfiles --dbpath "/data/mongo" 
 
-nginx:
-  image:
-    tlodge/nginx
-  links:
-    - neo4j
-    - buttonkit
-  ports:
-    - "80:80"
-    - "443:443"
-  volumes:
-    - /etc/nginx
-#   - /etc/letsencrypt/archive:/etc/letsencrypt/archive:ro
-#   - /etc/letsencrypt/live:/etc/letsencrypt/live:ro
-  container_name:
-    nginx1
+  redis:
+    restart: always
+    image: 
+      tlodge/redis
+    ports:
+      - "6679"
+    volumes:
+      - /data/redis
+    container_name:
+      redis1
+
+  buttonkit:
+    restart: always
+    
+    image:
+       tlodge/buttonkit 
+     
+    environment: 
+        VIRTUAL_HOST: wharfside2.buttonkit.com
+        LETSENCRYPT_HOST: wharfside2.buttonkit.com
+        LETSENCRYPT_EMAIL: tlodge@gmail.com
+
+    links:
+       - neo4j
+       - mongo
+       - redis
+       - rabbitmq
+       - postfix
+    ports:
+       - "8080"
+    
+    command:
+       node index.js 
+    
+    volumes:
+       - /var/run/docker.sock:/var/run/docker.sock
+       #- /usr/src/app/js/config
+       - ${HOSTMOUNT}/buttonkit/media:/usr/src/app/static/media
+       - /data/buttonkit/logs
+       - /data/buttonkit/app
+    container_name:
+       buttonkit
+
+  worker:
+    restart: always
+    image:
+      tlodge/worker
+    links:
+      - rabbitmq
+      - buttonkit
+    volumes:
+      - /root/roomcast/roomcast.worker/conf
+    container_name:
+      worker1
+    command:
+      npm start
+
+  nginx:
+    restart: always
+    image:
+      tlodge/nginx
+    links:
+      - neo4j
+      - buttonkit
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /etc/nginx
+      - /usr/share/nginx/html
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    container_name:
+      nginx1
+
+
+  letsencrypt-nginx-proxy-companion:
+    restart: always
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    volumes:
+        - /var/run/docker.sock:/var/run/docker.sock:ro
+    volumes_from:
+        - nginx1
