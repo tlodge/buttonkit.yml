@@ -112,7 +112,6 @@ services:
       npm start
 
   nginx:
-    restart: always
     image:
       tlodge/nginx
     links:
@@ -132,11 +131,11 @@ services:
       nginx1
 
 
-  letsencrypt-nginx-proxy-companion:
-    image: jrcs/letsencrypt-nginx-proxy-companion
-    volumes:
-        - /var/run/docker.sock:/var/run/docker.sock:ro
-    environment:
-        VHOST_DIR : /etc/nginx/sites-available
-    volumes_from:
-        - nginx
+#  letsencrypt-nginx-proxy-companion:
+#    image: jrcs/letsencrypt-nginx-proxy-companion
+#    volumes:
+#        - /var/run/docker.sock:/var/run/docker.sock:ro
+#    environment:
+#        VHOST_DIR : /etc/nginx/sites-available
+#    volumes_from:
+#        - nginx
