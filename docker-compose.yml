@@ -125,6 +125,8 @@ services:
       - /etc/nginx
       - /usr/share/nginx/html
       - /var/run/docker.sock:/tmp/docker.sock:ro
+      - /etc/nginx/certs
+      
     container_name:
       nginx1
 
