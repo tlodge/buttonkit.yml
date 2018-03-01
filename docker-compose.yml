@@ -114,7 +114,7 @@ services:
   nginx:
     restart: always
     image:
-      nginx
+      tlodge/nginx
     links:
       - neo4j
       - buttonkit
@@ -136,5 +136,7 @@ services:
     image: jrcs/letsencrypt-nginx-proxy-companion
     volumes:
         - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+        VHOST_DIR : /etc/nginx/sites-available
     volumes_from:
         - nginx
