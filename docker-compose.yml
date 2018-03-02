@@ -113,7 +113,7 @@ services:
 
   nginx:
     image:
-      tlodge/nginx
+      nginx
     links:
       - neo4j
       - buttonkit
